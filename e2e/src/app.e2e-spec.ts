@@ -8,9 +8,9 @@ describe('workspace-project App', () => {
     page = new AppPage();
   });
 
-  it('should display message saying Ristorante Con Fusion', () => {
+  it('should display message saying Ristorante Simple Menu', () => {
     page.navigateTo('/');
-    expect(page.getParagraphText('app-root h1')).toEqual('Ristorante Con Fusion');
+    expect(page.getParagraphText('app-root h1')).toEqual('Ristorante Simple Menu');
   });
 
   it('should navigate to about us page by clicking on the link', () => {
