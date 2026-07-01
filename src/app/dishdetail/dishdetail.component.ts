@@ -10,6 +10,7 @@ import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dishdetail',
@@ -45,7 +46,7 @@ export class DishdetailComponent implements OnInit {
 
   validationMessages = {
     'comment': {
-      'required':      'Comment is required.'
+      'required': 'Comment is required.'
     }
   };
 
@@ -61,15 +62,21 @@ export class DishdetailComponent implements OnInit {
   ngOnInit() {
     this.createForm();
 
-    this.dishservice.getDishIds().subscribe(dishIds => this.dishIds = dishIds);
-    this.route.params.pipe(switchMap((params: Params) => { this.visibility = 'hidden'; return this.dishservice.getDish(params['id']); }))
-    .subscribe(dish => {
+    this.route.params.pipe(
+      switchMap((params: Params) => {
+        this.visibility = 'hidden';
+        return forkJoin(
+          this.dishservice.getDish(params['id']),
+          this.dishservice.getDishIds()
+        );
+      })
+    ).subscribe(([dish, dishIds]) => {
       this.dish = dish;
+      this.dishIds = dishIds;
       this.setPrevNext(dish._id);
       this.visibility = 'shown';
-      this.favoriteService.isFavorite(this.dish._id)
-      .subscribe(resp => { console.log(resp); this.favorite = <boolean>resp.exists; },
-          err => console.log(err));
+      this.favoriteService.isFavorite(dish._id)
+        .subscribe(resp => this.favorite = resp.exists);
     },
     errmess => this.errMess = <any>errmess);
   }
